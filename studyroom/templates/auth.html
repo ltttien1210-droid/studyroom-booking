@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Đăng ký' if register else 'Đăng nhập' }} · StudyRoom{% endblock %}
+{% block layout %}auth-layout{% endblock %}
+{% block content %}
+<section class="panel auth-card">
+  <h1>{{ 'Tạo tài khoản' if register else 'Đăng nhập' }}</h1>
+  <p class="subtle">Đặt phòng cho buổi học nhóm tiếp theo.</p>
+  {% if error %}<p class="alert error" role="alert">{{ error }}</p>{% endif %}
+  <form method="post" class="stack">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    {% if register %}<label>Họ tên<input name="name" maxlength="80" required value="{{ name }}" autocomplete="name"></label>{% endif %}
+    <label>Tên đăng nhập<input name="username" maxlength="32" required autocomplete="username" value="{{ username|default('') }}"></label>
+    <label>Mật khẩu<input type="password" name="password" maxlength="128" {% if register %}minlength="12"{% endif %} required autocomplete="{{ 'new-password' if register else 'current-password' }}"></label>
+    {% if register %}<label>Nhập lại mật khẩu<input type="password" name="confirm" minlength="12" maxlength="128" required autocomplete="new-password"></label>{% endif %}
+    <button class="button primary">{{ 'Tạo tài khoản' if register else 'Đăng nhập' }}</button>
+  </form>
+  <p class="switch">{{ 'Đã có tài khoản?' if register else 'Chưa có tài khoản?' }} <a href="{{ url_for('auth.login' if register else 'auth.register') }}">{{ 'Đăng nhập' if register else 'Đăng ký' }}</a></p>
+</section>
+{% endblock %}

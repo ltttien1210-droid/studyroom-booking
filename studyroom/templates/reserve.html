@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Đặt phòng {{ room.code }} · StudyRoom{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('booking.index', day=values.day) }}">← Lịch phòng</a>
+<header class="heading"><div><p class="kicker">{{ room.code }} · {{ room.location }}</p><h1>{{ room.name }}</h1><p class="subtle">{{ room.capacity }} chỗ · {{ room.equipment }}</p></div></header>
+<div class="reserve-grid">
+<form method="post" class="panel detail-card stack">
+  <h2>Thông tin đặt phòng</h2>
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  {% if errors %}<p class="alert error" role="alert">Kiểm tra thông tin đặt phòng bên dưới.</p>{% endif %}
+  <div class="pair">
+    <label>Ngày sử dụng<input type="date" name="day" value="{{ values.day }}" min="{{ today }}" max="{{ last_day }}" required>{% if errors.day %}<small class="field-error">{{ errors.day }}</small>{% endif %}</label>
+    <label>Số người<input name="group_size" type="number" value="{{ values.group_size }}" min="1" max="{{ room.capacity }}" required>{% if errors.group_size %}<small class="field-error">{{ errors.group_size }}</small>{% endif %}</label>
+  </div>
+  <div class="pair">
+    <label><span id="start-label">Bắt đầu</span><select name="start" aria-labelledby="start-label" required><option value="">Chọn giờ</option>{% for minute in starts %}<option value="{{ minute }}" {% if minute == values.start %}selected{% endif %}>{{ minute|clock }}</option>{% endfor %}</select></label>
+    <label><span id="end-label">Kết thúc</span><select name="end" aria-labelledby="end-label" required><option value="">Chọn giờ</option>{% for minute in ends %}<option value="{{ minute }}" {% if minute == values.end %}selected{% endif %}>{{ minute|clock }}</option>{% endfor %}</select></label>
+  </div>
+  {% if errors.time %}<p class="field-error">{{ errors.time }}</p>{% endif %}
+  <label>Mục đích sử dụng<textarea name="purpose" maxlength="140" minlength="3" required rows="3" placeholder="Ví dụ: Chuẩn bị bài thuyết trình">{{ values.purpose }}</textarea>{% if errors.purpose %}<small class="field-error">{{ errors.purpose }}</small>{% endif %}</label>
+  <button class="button primary">Xác nhận đặt phòng</button>
+</form>
+<aside class="stack">
+  <section class="panel detail-card"><h2>Khung giờ đã có lịch</h2><p class="subtle">{{ values.day }}</p>
+  <ul class="busy-list">{% for row in busy_rows %}<li><span>{{ row.start_minute|clock }}–{{ row.end_minute|clock }}</span><span class="tag busy">Đã đặt</span></li>{% else %}<li>Chưa có lịch đặt trong ngày này.</li>{% endfor %}</ul></section>
+  <section class="panel detail-card"><h2>Quy định đặt phòng</h2><ul class="rules"><li>Giờ mở cửa 07:00–21:00.</li><li>Mỗi lượt kéo dài 30 phút đến 2 giờ.</li><li>Đặt trước tối đa 14 ngày.</li><li>Hủy trước giờ bắt đầu trong mục Lịch của tôi.</li></ul></section>
+</aside>
+</div>
+{% endblock %}

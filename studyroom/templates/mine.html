@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Lịch của tôi · StudyRoom{% endblock %}
+{% block content %}
+<header class="heading"><div><h1>Lịch của tôi</h1><p class="subtle">Xem mã đặt phòng, giờ sử dụng và các lượt đã hủy.</p></div><a class="button primary" href="{{ url_for('booking.index') }}">Tìm phòng</a></header>
+<nav class="tabs" aria-label="Trạng thái lịch">
+  <a href="{{ url_for('booking.mine') }}" {% if view == 'upcoming' %}aria-current="page"{% endif %}>Sắp tới</a>
+  <a href="{{ url_for('booking.mine', view='history') }}" {% if view == 'history' %}aria-current="page"{% endif %}>Lịch sử</a>
+</nav>
+<div class="stack">
+{% for row in rows %}
+  {% set started = row.day < now.date() or (row.day == now.date() and row.start_minute <= now.hour * 60 + now.minute) %}
+  <article class="panel reservation">
+    <div><p class="kicker">SR-{{ '%05d'|format(row.id) }}</p><h2>{{ row.room.name }}</h2><p class="subtle">{{ row.room.code }} · {{ row.room.location }}</p><p>{{ row.purpose }}</p></div>
+    <div><strong>{{ row.day.strftime('%d/%m/%Y') }} · {{ row.start_minute|clock }}–{{ row.end_minute|clock }}</strong><p class="subtle">{{ row.group_size }} người</p>
+      <span class="tag {{ 'busy' if row.cancelled_at else 'free' }}">{{ 'Đã hủy' if row.cancelled_at else 'Đã qua' if view == 'history' else 'Đang sử dụng' if started else 'Đã xác nhận' }}</span>
+    </div>
+    {% if not row.cancelled_at and not started %}
+    <details class="cancel"><summary>Hủy lịch</summary><form method="post" action="{{ url_for('booking.cancel', booking_id=row.id) }}">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}"><button class="button danger compact">Xác nhận hủy</button>
+    </form></details>
+    {% endif %}
+  </article>
+{% else %}
+  <div class="panel empty"><h3>{{ 'Bạn chưa có lịch sắp tới' if view == 'upcoming' else 'Chưa có lịch sử đặt phòng' }}</h3><p class="subtle">Lịch đặt theo tài khoản sẽ xuất hiện tại đây.</p></div>
+{% endfor %}
+</div>
+{% if pages > 1 %}<nav class="pagination" aria-label="Phân trang">
+  {% if page > 1 %}<a href="{{ url_for('booking.mine', view=view, page=page-1) }}">← Trước</a>{% endif %}
+  <span>Trang {{ page }} / {{ pages }}</span>
+  {% if page < pages %}<a href="{{ url_for('booking.mine', view=view, page=page+1) }}">Sau →</a>{% endif %}
+</nav>{% endif %}
+{% endblock %}

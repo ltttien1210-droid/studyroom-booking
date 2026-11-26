@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}StudyRoom{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+<a class="skip" href="#main">Đến nội dung</a>
+<header class="site-header"><div class="shell navigation">
+  <a class="brand" href="{{ url_for('booking.index') }}"><span class="brand-icon" aria-hidden="true">S</span>StudyRoom</a>
+  {% if g.user %}
+  <nav aria-label="Điều hướng">
+    <a href="{{ url_for('booking.index') }}" {% if request.endpoint in ['booking.index', 'booking.reserve_room'] %}aria-current="page"{% endif %}>Lịch phòng</a>
+    <a href="{{ url_for('booking.mine') }}" {% if request.endpoint == 'booking.mine' %}aria-current="page"{% endif %}>Lịch của tôi</a>
+  </nav>
+  <div class="account"><span>{{ g.user.name }}</span><form method="post" action="{{ url_for('auth.logout') }}">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}"><button class="button secondary compact">Đăng xuất</button>
+  </form></div>
+  {% endif %}
+</div></header>
+<main id="main" class="shell {% block layout %}{% endblock %}">
+  {% for message in get_flashed_messages() %}<p class="alert success" role="status">{{ message }}</p>{% endfor %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}Lỗi {{ error.code }} · StudyRoom{% endblock %}
+{% block content %}
+<section class="panel empty"><h1>Lỗi {{ error.code }}</h1><p class="subtle">{{ error.description if error.code < 500 else 'Máy chủ đang gặp sự cố. Hãy thử lại sau.' }}</p><a class="button secondary" href="{{ url_for('booking.index') }}">Về lịch phòng</a></section>
+{% endblock %}

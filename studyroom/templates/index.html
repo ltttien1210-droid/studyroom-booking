@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Lịch phòng · StudyRoom{% endblock %}
+{% block content %}
+<header class="heading">
+  <div><p class="kicker">THƯ VIỆN & KHÔNG GIAN HỌC TẬP</p><h1>Đặt phòng học nhóm</h1><p class="subtle">Chọn ngày, tìm phòng vừa sức chứa và giữ chỗ theo khung 30 phút.</p></div>
+  <a class="button secondary" href="{{ url_for('booking.mine') }}">Xem lịch của tôi</a>
+</header>
+<section class="panel filters" aria-label="Bộ lọc phòng">
+  <form method="get" class="filter-form">
+    <label>Ngày sử dụng<input name="day" type="date" min="{{ today }}" max="{{ last_day }}" value="{{ day }}" required></label>
+    <label>Số người<input name="seats" type="number" min="1" max="30" value="{{ seats }}" required></label>
+    <button class="button primary">Xem lịch</button>
+  </form>
+  <div class="date-nav">
+    {% if day > today %}<a class="button secondary compact" href="{{ url_for('booking.index', day=previous, seats=seats) }}">← Hôm trước</a>{% endif %}
+    {% if day < last_day %}<a class="button secondary compact" href="{{ url_for('booking.index', day=next_day, seats=seats) }}">Hôm sau →</a>{% endif %}
+  </div>
+</section>
+<section aria-labelledby="room-list">
+  <div class="section-title">
+    <div><h2 id="room-list">Phòng ngày {{ day.strftime('%d/%m/%Y') }}</h2><p class="subtle">{{ rooms|length }} phòng phù hợp · Giờ Việt Nam (UTC+7)</p></div>
+    <div class="legend"><span><i class="free"></i>Trống</span><span><i class="busy"></i>Đã đặt</span><span><i class="past"></i>Đã qua</span></div>
+  </div>
+  <div class="room-grid">
+  {% for room in rooms %}
+    {% set reserved = busy[room.id] %}
+    <article class="panel room">
+      <div class="room-top"><span class="room-code">{{ room.code }}</span><span class="tag">{{ room.capacity }} chỗ</span></div>
+      <h3>{{ room.name }}</h3><p class="subtle">{{ room.location }}</p><p class="equipment">{{ room.equipment }}</p>
+      <div class="slot-list" aria-label="Khung giờ phòng {{ room.code }}">
+      {% for minute in starts %}
+        {% set state = 'busy' if minute in reserved else 'past' if minute in past else 'free' %}
+        {% if state == 'free' %}<a class="slot free" href="{{ url_for('booking.reserve_room', room_id=room.id, day=day, seats=seats, start=minute) }}" aria-label="Đặt {{ room.code }} lúc {{ minute|clock }}">{{ minute|clock }}</a>
+        {% else %}<span class="slot {{ state }}" title="{{ 'Đã đặt' if state == 'busy' else 'Đã qua' }}"><span class="sr-only">{{ 'Đã đặt' if state == 'busy' else 'Đã qua' }} lúc </span>{{ minute|clock }}</span>{% endif %}
+      {% endfor %}
+      </div>
+    </article>
+  {% else %}
+    <div class="panel empty"><h3>Không có phòng đủ chỗ</h3><p class="subtle">Giảm số người để xem các phòng còn phù hợp.</p></div>
+  {% endfor %}
+  </div>
+</section>
+{% endblock %}
